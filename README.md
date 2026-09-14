@@ -35,6 +35,22 @@ Se você não colocou `LICENSE_KEY` no `.env`, ative pela própria interface:
 Sem licença ativa, a instância roda no modo gratuito (limites reduzidos de
 usuários, agents, automações e execuções).
 
+## Configurando e-mail (necessário para convites)
+
+Convidar membros para o workspace depende de envio de e-mail. Configure **uma**
+das opções abaixo no `.env` antes de convidar alguém — sem isso, o convite falha:
+
+- **Resend** (mais simples): preencha `RESEND_API_KEY`.
+- **SMTP genérico** (Gmail, SendGrid, servidor próprio, etc.): preencha
+  `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`
+  e `SMTP_FROM_NAME`.
+
+Depois de editar o `.env`, reinicie o serviço da API:
+
+```bash
+docker compose up -d api
+```
+
 ## Atualizando
 
 ```bash
