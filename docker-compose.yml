@@ -1,0 +1,83 @@
+# Nexus Orchestrator — self-hosted distribution
+#
+# Runs the full stack from prebuilt images (no source code needed on this machine).
+# Setup:
+#   1. cp .env.example .env  and fill in the required values (see README.md)
+#   2. docker compose up -d
+#   3. Open http://localhost:3000, create the first workspace, then activate your
+#      license key on the Billing page (or set LICENSE_KEY below before starting).
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: nexus_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-rpanexus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set a real password in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-rpanexus_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rpanexus} -d ${POSTGRES_DB:-rpanexus_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
+    container_name: nexus_api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rpanexus_db}
+      - REDIS_URL=redis://redis:6379/0
+      - SELF_HOSTED_MODE=true
+      - LICENSE_SERVER_URL=${LICENSE_SERVER_URL:-https://nexus-api-production-0e03.up.railway.app}
+      - LICENSE_PUBLIC_KEY_PATH=/license-trust/license-public.pem
+      - AGENT_RELEASE_PATH=/releases
+      - AGENT_RELEASE_PUBLIC_KEY_PATH=/release-trust/agent-public.key
+      - PACKAGE_STORAGE_PATH=/storage/packages
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - package_storage:/storage/packages
+      - ./license-trust:/license-trust:ro
+      - ./release-trust:/release-trust:ro
+      - ./agent-releases:/releases:ro
+
+  web:
+    image: ${NEXUS_WEB_IMAGE:-danilloabsilva/nexus-web:latest}
+    container_name: nexus_web
+    restart: unless-stopped
+    environment:
+      - VITE_API_BASE_URL=${PUBLIC_API_URL:-http://localhost:8000}
+      - VITE_CENTRAL_APP_URL=${CENTRAL_APP_URL:-https://app.nexusorchestrator.com.br}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
+  package_storage:
