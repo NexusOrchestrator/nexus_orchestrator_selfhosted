@@ -52,6 +52,7 @@ services:
       - AGENT_RELEASE_PATH=/releases
       - AGENT_RELEASE_PUBLIC_KEY_PATH=/release-trust/agent-public.key
       - PACKAGE_STORAGE_PATH=/storage/packages
+      - ACADEMY_UPLOAD_PATH=/storage/academy-uploads
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
@@ -61,6 +62,7 @@ services:
         condition: service_healthy
     volumes:
       - package_storage:/storage/packages
+      - academy_uploads:/storage/academy-uploads
       - ./license-trust:/license-trust:ro
       - ./release-trust:/release-trust:ro
       - ./agent-releases:/releases:ro
@@ -81,3 +83,4 @@ volumes:
   postgres_data:
   redis_data:
   package_storage:
+  academy_uploads:
