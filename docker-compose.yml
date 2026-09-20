@@ -47,7 +47,7 @@ services:
       - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rpanexus_db}
       - REDIS_URL=redis://redis:6379/0
       - SELF_HOSTED_MODE=true
-      - LICENSE_SERVER_URL=${LICENSE_SERVER_URL:-https://nexus-api-production-0e03.up.railway.app}
+      - LICENSE_SERVER_URL=${LICENSE_SERVER_URL:-https://api.nexusorchestrator.com.br}
       - LICENSE_PUBLIC_KEY_PATH=/license-trust/license-public.pem
       - AGENT_RELEASE_PATH=/releases
       - AGENT_RELEASE_PUBLIC_KEY_PATH=/release-trust/agent-public.key
