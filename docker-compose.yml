@@ -51,8 +51,9 @@ services:
       - LICENSE_PUBLIC_KEY_PATH=/license-trust/license-public.pem
       - AGENT_RELEASE_PATH=/releases
       - AGENT_RELEASE_PUBLIC_KEY_PATH=/release-trust/agent-public.key
-      - PACKAGE_STORAGE_PATH=/storage/packages
-      - ACADEMY_UPLOAD_PATH=/storage/academy-uploads
+      - STORAGE_PACKAGE_PATH=/storage/packages
+      - STORAGE_EXECUTION_ARTIFACT_PATH=/storage/execution-artifacts
+      - STORAGE_ACADEMY_UPLOAD_PATH=/storage/academy-uploads
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
