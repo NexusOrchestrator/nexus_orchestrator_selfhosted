@@ -41,15 +41,21 @@ services:
 
   nexus_orchestrator_selfhosted_production_api:
     image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
+    pull_policy: always
     container_name: nexus_orchestrator_selfhosted_production_api
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
     env_file:
       - .env
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       SELF_HOSTED_MODE: "true"
-      APP_VERSION: ${APP_VERSION:-dev}
-      SKIP_MIGRATIONS: ${SKIP_MIGRATIONS:-0}
+      SKIP_MIGRATIONS: "0"
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@nexus_orchestrator_selfhosted_production_db:5432/${POSTGRES_DB:-rpanexus_db}
@@ -79,6 +85,7 @@ services:
 
   nexus_orchestrator_selfhosted_production_scheduler:
     image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
+    pull_policy: always
     container_name: nexus_orchestrator_selfhosted_production_scheduler
     restart: unless-stopped
     env_file:
@@ -86,8 +93,7 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       SELF_HOSTED_MODE: "true"
-      APP_VERSION: ${APP_VERSION:-dev}
-      SKIP_MIGRATIONS: ${SKIP_MIGRATIONS:-0}
+      SKIP_MIGRATIONS: "0"
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@nexus_orchestrator_selfhosted_production_db:5432/${POSTGRES_DB:-rpanexus_db}
@@ -102,12 +108,8 @@ services:
       STORAGE_ACADEMY_UPLOAD_PATH: /storage/academy-uploads
     command: python -m app.worker
     depends_on:
-      nexus_orchestrator_selfhosted_production_db:
-        condition: service_healthy
-      nexus_orchestrator_selfhosted_production_redis:
-        condition: service_healthy
       nexus_orchestrator_selfhosted_production_api:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - nexus_orchestrator_selfhosted_production_package_storage:/storage/packages
       - nexus_orchestrator_selfhosted_production_execution_artifacts:/storage/execution-artifacts
@@ -118,6 +120,7 @@ services:
 
   nexus_orchestrator_selfhosted_production_web:
     image: ${NEXUS_WEB_IMAGE:-danilloabsilva/nexus-web:latest}
+    pull_policy: always
     container_name: nexus_orchestrator_selfhosted_production_web
     restart: unless-stopped
     environment:
@@ -126,7 +129,8 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
-      - nexus_orchestrator_selfhosted_production_api
+      nexus_orchestrator_selfhosted_production_api:
+        condition: service_healthy
 
 volumes:
   nexus_orchestrator_selfhosted_production_db:
@@ -134,3 +138,8 @@ volumes:
   nexus_orchestrator_selfhosted_production_package_storage:
   nexus_orchestrator_selfhosted_production_execution_artifacts:
   nexus_orchestrator_selfhosted_production_academy_uploads:
+
+
+networks:
+  nexus_orchestrator_selfhosted_production_network:
+    driver: bridge

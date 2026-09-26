@@ -5,16 +5,20 @@ Rode a plataforma completa (API, Web, filas, execuções) na sua própria infrae
 ## Requisitos
 
 - Docker e Docker Compose
-- Uma licença Nexus Orchestrator (compre em https://nexusorchestrator.com/self-hosted)
+- Uma licença Nexus Orchestrator (compre em https://app.nexusorchestrator.com.br/self-hosted)
 
 ## Instalação
 
 ```bash
 cp .env.example .env
-# edite .env: defina SECRET_KEY, SECRET_ENCRYPTION_KEY e POSTGRES_PASSWORD
+# gere e defina os segredos obrigatórios:
+#   openssl rand -hex 32                 # SECRET_KEY
+#   openssl rand -base64 32              # SECRET_ENCRYPTION_KEY
+# também defina uma senha forte em POSTGRES_PASSWORD
 # não configure chaves Stripe: o billing self-hosted é processado pelo servidor central
 # (opcional: já cole sua LICENSE_KEY aqui, ou ative depois pela tela de Billing)
 
+docker compose pull
 docker compose up -d
 ```
 
