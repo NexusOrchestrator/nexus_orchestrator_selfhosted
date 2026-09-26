@@ -11,7 +11,8 @@ Rode a plataforma completa (API, Web, filas, execuções) na sua própria infrae
 
 ```bash
 cp .env.example .env
-# edite .env: defina SECRET_KEY, SECRET_ENCRYPTION_KEY, POSTGRES_PASSWORD
+# edite .env: defina SECRET_KEY, SECRET_ENCRYPTION_KEY e POSTGRES_PASSWORD
+# não configure chaves Stripe: o billing self-hosted é processado pelo servidor central
 # (opcional: já cole sua LICENSE_KEY aqui, ou ative depois pela tela de Billing)
 
 docker compose up -d
@@ -33,7 +34,8 @@ Se você não colocou `LICENSE_KEY` no `.env`, ative pela própria interface:
 **Configurações → Billing → Ativar licença** e cole a chave recebida por e-mail.
 
 Sem licença ativa, a instância roda no modo gratuito (limites reduzidos de
-usuários, agents, automações e execuções).
+usuários, agents, automações e execuções). O download do Agent e as operações
+permitidas pelo free tier continuam disponíveis até os limites configurados.
 
 ## Configurando e-mail (necessário para convites)
 
@@ -45,10 +47,10 @@ das opções abaixo no `.env` antes de convidar alguém — sem isso, o convite 
   `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`
   e `SMTP_FROM_NAME`.
 
-Depois de editar o `.env`, reinicie o serviço da API:
+Depois de editar o `.env`, reinicie a API e o scheduler:
 
 ```bash
-docker compose up -d api
+docker compose up -d nexus_orchestrator_selfhosted_production_api nexus_orchestrator_selfhosted_production_scheduler
 ```
 
 ## Atualizando
@@ -58,7 +60,7 @@ docker compose pull
 docker compose up -d
 ```
 
-As migrações do banco rodam automaticamente na subida do container `api`.
+As migrações do banco rodam automaticamente na subida do container `api`. O worker `scheduler` também é iniciado automaticamente para processar agendamentos, filas e execuções.
 
 ## Backup
 
@@ -66,7 +68,7 @@ Os dados ficam nos volumes Docker `postgres_data` (banco) e `package_storage`
 (pacotes de automação publicados). Faça backup regularmente:
 
 ```bash
-docker compose exec postgres pg_dump -U rpanexus rpanexus_db > backup.sql
+docker compose exec nexus_orchestrator_db_selfhosted pg_dump -U rpanexus rpanexus_db > backup.sql
 ```
 
 ## Suporte

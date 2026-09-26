@@ -7,70 +7,118 @@
 #   3. Open http://localhost:3000, create the first workspace, then activate your
 #      license key on the Billing page (or set LICENSE_KEY below before starting).
 
+name: nexus_orchestrator_selfhosted_production
+
 services:
-  redis:
+  nexus_orchestrator_selfhosted_production_redis:
     image: redis:7-alpine
-    container_name: nexus_redis
+    container_name: nexus_orchestrator_selfhosted_production_redis
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+      - nexus_orchestrator_selfhosted_production_redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-  postgres:
+  nexus_orchestrator_selfhosted_production_db:
     image: postgres:16-alpine
-    container_name: nexus_postgres
+    container_name: nexus_orchestrator_selfhosted_production_db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-rpanexus}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set a real password in .env}
       POSTGRES_DB: ${POSTGRES_DB:-rpanexus_db}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - nexus_orchestrator_selfhosted_production_db:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rpanexus} -d ${POSTGRES_DB:-rpanexus_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  api:
+  nexus_orchestrator_selfhosted_production_api:
     image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
-    container_name: nexus_api
+    container_name: nexus_orchestrator_selfhosted_production_api
     restart: unless-stopped
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-rpanexus_db}
-      - REDIS_URL=redis://redis:6379/0
-      - SELF_HOSTED_MODE=true
-      - LICENSE_SERVER_URL=${LICENSE_SERVER_URL:-https://api.nexusorchestrator.com.br}
-      - LICENSE_PUBLIC_KEY_PATH=/license-trust/license-public.pem
-      - AGENT_RELEASE_PATH=/releases
-      - AGENT_RELEASE_PUBLIC_KEY_PATH=/release-trust/agent-public.key
-      - STORAGE_PACKAGE_PATH=/storage/packages
-      - STORAGE_EXECUTION_ARTIFACT_PATH=/storage/execution-artifacts
-      - STORAGE_ACADEMY_UPLOAD_PATH=/storage/academy-uploads
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      SELF_HOSTED_MODE: "true"
+      APP_VERSION: ${APP_VERSION:-dev}
+      SKIP_MIGRATIONS: ${SKIP_MIGRATIONS:-0}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@nexus_orchestrator_selfhosted_production_db:5432/${POSTGRES_DB:-rpanexus_db}
+      REDIS_URL: redis://nexus_orchestrator_selfhosted_production_redis:6379/0
+      LICENSE_KEY: ${LICENSE_KEY:-}
+      LICENSE_SERVER_URL: ${LICENSE_SERVER_URL:-https://api.nexusorchestrator.com.br}
+      LICENSE_PUBLIC_KEY_PATH: /license-trust/license-public.pem
+      AGENT_RELEASE_PATH: /releases
+      AGENT_RELEASE_PUBLIC_KEY_PATH: /release-trust/agent-public.key
+      STORAGE_PACKAGE_PATH: /storage/packages
+      STORAGE_EXECUTION_ARTIFACT_PATH: /storage/execution-artifacts
+      STORAGE_ACADEMY_UPLOAD_PATH: /storage/academy-uploads
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
-      postgres:
+      nexus_orchestrator_selfhosted_production_db:
         condition: service_healthy
-      redis:
+      nexus_orchestrator_selfhosted_production_redis:
         condition: service_healthy
     volumes:
-      - package_storage:/storage/packages
-      - academy_uploads:/storage/academy-uploads
+      - nexus_orchestrator_selfhosted_production_package_storage:/storage/packages
+      - nexus_orchestrator_selfhosted_production_execution_artifacts:/storage/execution-artifacts
+      - nexus_orchestrator_selfhosted_production_academy_uploads:/storage/academy-uploads
       - ./license-trust:/license-trust:ro
       - ./release-trust:/release-trust:ro
       - ./agent-releases:/releases:ro
 
-  web:
+  nexus_orchestrator_selfhosted_production_scheduler:
+    image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
+    container_name: nexus_orchestrator_selfhosted_production_scheduler
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      SELF_HOSTED_MODE: "true"
+      APP_VERSION: ${APP_VERSION:-dev}
+      SKIP_MIGRATIONS: ${SKIP_MIGRATIONS:-0}
+      SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
+      SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@nexus_orchestrator_selfhosted_production_db:5432/${POSTGRES_DB:-rpanexus_db}
+      REDIS_URL: redis://nexus_orchestrator_selfhosted_production_redis:6379/0
+      LICENSE_KEY: ${LICENSE_KEY:-}
+      LICENSE_SERVER_URL: ${LICENSE_SERVER_URL:-https://api.nexusorchestrator.com.br}
+      LICENSE_PUBLIC_KEY_PATH: /license-trust/license-public.pem
+      AGENT_RELEASE_PATH: /releases
+      AGENT_RELEASE_PUBLIC_KEY_PATH: /release-trust/agent-public.key
+      STORAGE_PACKAGE_PATH: /storage/packages
+      STORAGE_EXECUTION_ARTIFACT_PATH: /storage/execution-artifacts
+      STORAGE_ACADEMY_UPLOAD_PATH: /storage/academy-uploads
+    command: python -m app.worker
+    depends_on:
+      nexus_orchestrator_selfhosted_production_db:
+        condition: service_healthy
+      nexus_orchestrator_selfhosted_production_redis:
+        condition: service_healthy
+      nexus_orchestrator_selfhosted_production_api:
+        condition: service_started
+    volumes:
+      - nexus_orchestrator_selfhosted_production_package_storage:/storage/packages
+      - nexus_orchestrator_selfhosted_production_execution_artifacts:/storage/execution-artifacts
+      - nexus_orchestrator_selfhosted_production_academy_uploads:/storage/academy-uploads
+      - ./license-trust:/license-trust:ro
+      - ./release-trust:/release-trust:ro
+      - ./agent-releases:/releases:ro
+
+  nexus_orchestrator_selfhosted_production_web:
     image: ${NEXUS_WEB_IMAGE:-danilloabsilva/nexus-web:latest}
-    container_name: nexus_web
+    container_name: nexus_orchestrator_selfhosted_production_web
     restart: unless-stopped
     environment:
       - VITE_API_BASE_URL=${NEXUS_PUBLIC_API_URL:-http://localhost:8000}
@@ -78,10 +126,11 @@ services:
     ports:
       - "${WEB_PORT:-3000}:3000"
     depends_on:
-      - api
+      - nexus_orchestrator_selfhosted_production_api
 
 volumes:
-  postgres_data:
-  redis_data:
-  package_storage:
-  academy_uploads:
+  nexus_orchestrator_selfhosted_production_db:
+  nexus_orchestrator_selfhosted_production_redis:
+  nexus_orchestrator_selfhosted_production_package_storage:
+  nexus_orchestrator_selfhosted_production_execution_artifacts:
+  nexus_orchestrator_selfhosted_production_academy_uploads:
