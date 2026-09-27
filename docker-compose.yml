@@ -4,8 +4,11 @@
 # Setup:
 #   1. cp .env.example .env  and fill in the required values (see README.md)
 #   2. docker compose up -d
-#   3. Open http://localhost:3000, create the first workspace, then activate your
+#   3. Open http://localhost:${PLATFORM_PORT:-3000}, create the first workspace, then activate your
 #      license key on the Billing page (or set LICENSE_KEY below before starting).
+#
+# The self-hosted package contains the platform only. Public pages remain on the
+# configured VITE_SITE_URL and are not served by this stack.
 
 name: nexus_orchestrator_selfhosted_production
 
@@ -118,16 +121,18 @@ services:
       - ./release-trust:/release-trust:ro
       - ./agent-releases:/releases:ro
 
-  nexus_orchestrator_selfhosted_production_web:
-    image: ${NEXUS_WEB_IMAGE:-danilloabsilva/nexus-web:latest}
+  nexus_orchestrator_selfhosted_production_platform:
+    image: ${NEXUS_PLATFORM_IMAGE:-danilloabsilva/nexus-platform:latest}
     pull_policy: always
-    container_name: nexus_orchestrator_selfhosted_production_web
+    container_name: nexus_orchestrator_selfhosted_production_platform
     restart: unless-stopped
     environment:
+      - SELF_HOSTED_MODE=true
       - VITE_API_BASE_URL=${NEXUS_PUBLIC_API_URL:-http://localhost:8000}
-      - VITE_CENTRAL_APP_URL=${CENTRAL_APP_URL:-https://app.nexusorchestrator.com.br}
+      - VITE_SITE_URL=${VITE_SITE_URL:-https://www.nexusorchestrator.com.br}
+      - VITE_PLATFORM_URL=${VITE_PLATFORM_URL:-http://localhost:3000}
     ports:
-      - "${WEB_PORT:-3000}:3000"
+      - "${PLATFORM_PORT:-3000}:3000"
     depends_on:
       nexus_orchestrator_selfhosted_production_api:
         condition: service_healthy

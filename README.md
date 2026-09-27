@@ -1,11 +1,10 @@
 # Nexus Orchestrator — Self-hosted
-
-Rode a plataforma completa (API, Web, filas, execuções) na sua própria infraestrutura.
+Rode a plataforma completa (API, plataforma, filas e execuções) na sua própria infraestrutura. As páginas públicas ficam no site oficial; esta distribuição contém apenas a plataforma, login e registro.
 
 ## Requisitos
 
 - Docker e Docker Compose
-- Uma licença Nexus Orchestrator (compre em https://app.nexusorchestrator.com.br/self-hosted)
+- Uma licença Nexus Orchestrator (compre em https://www.nexusorchestrator.com.br/self-hosted)
 
 ## Instalação
 
@@ -24,7 +23,7 @@ docker compose up -d
 
 Acesse:
 
-- Web: http://localhost:3000
+- Plataforma: http://localhost:${PLATFORM_PORT:-3000}
 - API: http://localhost:8000/docs
 
 No primeiro acesso, crie o workspace inicial (só é permitido criar um; instâncias
@@ -77,5 +76,5 @@ docker compose exec nexus_orchestrator_db_selfhosted pg_dump -U rpanexus rpanexu
 
 ## Suporte
 
-- Documentação: https://app.nexusorchestrator.com.br/docs
+- Documentação: https://www.nexusorchestrator.com.br/docs
 - Suporte: suporte@nexusorchestrator.com.br
