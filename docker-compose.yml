@@ -61,6 +61,7 @@ services:
       SKIP_MIGRATIONS: "0"
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
+      NEXUS_WEBHOOK_BASE_URL: ${NEXUS_PUBLIC_PLATFORM_URL:-http://localhost:3000}
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@nexus_orchestrator_selfhosted_production_db:5432/${POSTGRES_DB:-rpanexus_db}
       REDIS_URL: redis://nexus_orchestrator_selfhosted_production_redis:6379/0
       LICENSE_KEY: ${LICENSE_KEY:-}
@@ -97,6 +98,7 @@ services:
       SKIP_MIGRATIONS: "0"
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
+      NEXUS_WEBHOOK_BASE_URL: ${NEXUS_PUBLIC_PLATFORM_URL:-http://localhost:3000}
       DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-rpanexus}:${POSTGRES_PASSWORD}@nexus_orchestrator_selfhosted_production_db:5432/${POSTGRES_DB:-rpanexus_db}
       REDIS_URL: redis://nexus_orchestrator_selfhosted_production_redis:6379/0
       LICENSE_KEY: ${LICENSE_KEY:-}
@@ -124,7 +126,9 @@ services:
     restart: unless-stopped
     environment:
       - SELF_HOSTED_MODE=true
+      - API_PROXY_TARGET=http://nexus_orchestrator_selfhosted_production_api:8000
       - VITE_API_BASE_URL=${NEXUS_PUBLIC_API_URL:-http://localhost:8000}
+      - VITE_WEBHOOK_BASE_URL=${NEXUS_WEBHOOK_BASE_URL:-${NEXUS_PUBLIC_PLATFORM_URL:-http://localhost:3000}}
       - VITE_SITE_URL=${VITE_SITE_URL:-https://nexusorchestrator.com.br}
       - VITE_PLATFORM_URL=${VITE_PLATFORM_URL:-http://localhost:3000}
     ports:
