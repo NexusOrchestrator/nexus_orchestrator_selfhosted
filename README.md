@@ -14,7 +14,8 @@ cp .env.example .env
 #   openssl rand -hex 32                 # SECRET_KEY
 #   openssl rand -base64 32              # SECRET_ENCRYPTION_KEY
 # também defina uma senha forte em POSTGRES_PASSWORD
-# não configure chaves Stripe: o billing self-hosted é processado pelo servidor central
+# não configure chaves Stripe: Stripe, Admin e Academy são Cloud-only;
+# o billing self-hosted é processado pelo servidor central
 # (opcional: já cole sua LICENSE_KEY aqui, ou ative depois pela tela de Billing)
 
 docker compose pull
@@ -35,6 +36,8 @@ fica só o login.
 Se você não colocou `LICENSE_KEY` no `.env`, ative pela própria interface:
 
 **Configurações → Billing → Ativar licença** e cole a chave recebida por e-mail.
+
+A instância self-hosted não inclui o Admin nem as funcionalidades Academy do Cloud.
 
 Sem licença ativa, a instância roda no modo gratuito (limites reduzidos de
 usuários, agents, automações e execuções). O download do Agent e as operações
