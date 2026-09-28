@@ -58,7 +58,6 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       SELF_HOSTED_MODE: "true"
-      APP_VERSION: ${APP_VERSION:-latest}
       SKIP_MIGRATIONS: "0"
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
@@ -95,7 +94,6 @@ services:
     environment:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       SELF_HOSTED_MODE: "true"
-      APP_VERSION: ${APP_VERSION:-latest}
       SKIP_MIGRATIONS: "0"
       SECRET_KEY: ${SECRET_KEY:?set SECRET_KEY in .env}
       SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:?set SECRET_ENCRYPTION_KEY in .env}
