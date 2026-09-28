@@ -1,25 +1,30 @@
 # Nexus Orchestrator — Self-hosted
-
-Rode a plataforma completa (API, Web, filas, execuções) na sua própria infraestrutura.
+Rode a plataforma completa (API, plataforma, filas e execuções) na sua própria infraestrutura. As páginas públicas ficam no site oficial; esta distribuição contém apenas a plataforma, login e registro.
 
 ## Requisitos
 
 - Docker e Docker Compose
-- Uma licença Nexus Orchestrator (compre em https://nexusorchestrator.com/self-hosted)
+- Uma licença Nexus Orchestrator (compre em https://www.nexusorchestrator.com.br/self-hosted)
 
 ## Instalação
 
 ```bash
 cp .env.example .env
-# edite .env: defina SECRET_KEY, SECRET_ENCRYPTION_KEY, POSTGRES_PASSWORD
+# gere e defina os segredos obrigatórios:
+#   openssl rand -hex 32                 # SECRET_KEY
+#   openssl rand -base64 32              # SECRET_ENCRYPTION_KEY
+# também defina uma senha forte em POSTGRES_PASSWORD
+# não configure chaves Stripe: Stripe, Admin e Academy são Cloud-only;
+# o billing self-hosted é processado pelo servidor central
 # (opcional: já cole sua LICENSE_KEY aqui, ou ative depois pela tela de Billing)
 
+docker compose pull
 docker compose up -d
 ```
 
 Acesse:
 
-- Web: http://localhost:3000
+- Plataforma: http://localhost:${PLATFORM_PORT:-3000}
 - API: http://localhost:8000/docs
 
 No primeiro acesso, crie o workspace inicial (só é permitido criar um; instâncias
@@ -32,8 +37,11 @@ Se você não colocou `LICENSE_KEY` no `.env`, ative pela própria interface:
 
 **Configurações → Billing → Ativar licença** e cole a chave recebida por e-mail.
 
+A instância self-hosted não inclui o Admin nem as funcionalidades Academy do Cloud.
+
 Sem licença ativa, a instância roda no modo gratuito (limites reduzidos de
-usuários, agents, automações e execuções).
+usuários, agents, automações e execuções). O download do Agent e as operações
+permitidas pelo free tier continuam disponíveis até os limites configurados.
 
 ## Configurando e-mail (necessário para convites)
 
@@ -45,10 +53,10 @@ das opções abaixo no `.env` antes de convidar alguém — sem isso, o convite 
   `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`
   e `SMTP_FROM_NAME`.
 
-Depois de editar o `.env`, reinicie o serviço da API:
+Depois de editar o `.env`, reinicie a API e o scheduler:
 
 ```bash
-docker compose up -d api
+docker compose up -d nexus_orchestrator_selfhosted_production_api nexus_orchestrator_selfhosted_production_scheduler
 ```
 
 ## Atualizando
@@ -58,7 +66,7 @@ docker compose pull
 docker compose up -d
 ```
 
-As migrações do banco rodam automaticamente na subida do container `api`.
+As migrações do banco rodam automaticamente na subida do container `api`. O worker `scheduler` também é iniciado automaticamente para processar agendamentos, filas e execuções.
 
 ## Backup
 
@@ -66,10 +74,10 @@ Os dados ficam nos volumes Docker `postgres_data` (banco) e `package_storage`
 (pacotes de automação publicados). Faça backup regularmente:
 
 ```bash
-docker compose exec postgres pg_dump -U rpanexus rpanexus_db > backup.sql
+docker compose exec nexus_orchestrator_db_selfhosted pg_dump -U rpanexus rpanexus_db > backup.sql
 ```
 
 ## Suporte
 
-- Documentação: https://app.nexusorchestrator.com.br/docs
+- Documentação: https://www.nexusorchestrator.com.br/docs
 - Suporte: suporte@nexusorchestrator.com.br

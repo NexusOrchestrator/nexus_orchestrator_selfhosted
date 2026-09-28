@@ -1,9 +1,9 @@
 {
   "manifest": {
-    "version": "0.3.47",
-    "filename": "nexus-agent-0.3.47.zip",
-    "sha256": "63b093463f74777281b89e678413c89be1f5136c9732ab2d1f93bb0456db0ae6"
+    "version": "0.3.51",
+    "filename": "nexus-agent-0.3.51.zip",
+    "sha256": "e46033f06e016bf349efe1e6d69e3ecbd0a5f1c842c9258f89d872a50bbdb249"
   },
   "public_key": "miYmx8vPbM+JUVyNqYd/GafxgjXgh/boDQB7lylhxJ0=",
-  "signature": "xMdSfNbAVbG/hh7j8fAIjL7bdaGyQHATBhBnkrfJanbA/iHmg3iAOh0EChSF9j9opRN3bjM+oJgd+3i78BjrAQ=="
+  "signature": "ygd7ILAuHRNxC0VGBlRVeTaug1xZU9eMR5QlJ8N3+ZmoIPFJOtd+MEP7SAWSBTGnw+5i33KYR3LYhtXxczwsAQ=="
 }
