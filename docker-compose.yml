@@ -85,10 +85,10 @@ services:
       - ./release-trust:/release-trust:ro
       - ./agent-releases:/releases:ro
 
-  nexus_orchestrator_selfhosted_production_scheduler:
+  nexus_orchestrator_selfhosted_production_schedule:
     image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
     pull_policy: always
-    container_name: nexus_orchestrator_selfhosted_production_scheduler
+    container_name: nexus_orchestrator_selfhosted_production_schedule
     restart: unless-stopped
     env_file:
       - .env
@@ -119,10 +119,10 @@ services:
       - ./release-trust:/release-trust:ro
       - ./agent-releases:/releases:ro
 
-  nexus_orchestrator_selfhosted_production_flow_worker:
+  nexus_orchestrator_selfhosted_production_worker:
     image: ${NEXUS_API_IMAGE:-danilloabsilva/nexus-api:latest}
     pull_policy: always
-    container_name: nexus_orchestrator_selfhosted_production_flow_worker
+    container_name: nexus_orchestrator_selfhosted_production_worker
     restart: unless-stopped
     env_file:
       - .env
