@@ -56,7 +56,7 @@ das opções abaixo no `.env` antes de convidar alguém — sem isso, o convite 
 Depois de editar o `.env`, reinicie a API e o scheduler:
 
 ```bash
-docker compose up -d nexus_orchestrator_selfhosted_production_api nexus_orchestrator_selfhosted_production_scheduler
+docker compose up -d nexus_orchestrator_selfhosted_production_api nexus_orchestrator_selfhosted_production_schedule
 ```
 
 ## Atualizando
